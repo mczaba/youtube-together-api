@@ -12,18 +12,15 @@ let ID = null;
 let timer = null;
 
 io.on("connection", function(socket) {
-  console.log(socket.id);
   io.emit("initialize", {
     ID,
     timer
   });
   socket.on("playVideo", function() {
     io.emit("playVideo");
-    console.log("play");
   });
   socket.on("pauseVideo", function() {
     io.emit("pauseVideo");
-    console.log("pause");
   });
   socket.on("seekTo", function(data) {
     io.emit("seekTo", data);
@@ -33,5 +30,6 @@ io.on("connection", function(socket) {
   });
   socket.on("changeID", function(data) {
     ID = data;
+    io.emit("changeID", data);
   });
 });
