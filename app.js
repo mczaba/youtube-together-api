@@ -8,28 +8,34 @@ const server = app.listen(PORT, function() {
 });
 
 const io = require("socket.io")(server);
-let ID = null;
-let timer = null;
 
 io.on("connection", function(socket) {
-  io.emit("initialize", {
-    ID,
-    timer
-  });
+  var room = socket.handshake["query"]["r_var"];
+  socket.join(room);
+  console.log("user joined room #" + room);
+  if (io.sockets.adapter.rooms[room].ID || io.sockets.adapter.rooms[room].timer) {
+    io.to(room).emit("initialize", {
+      ID: io.sockets.adapter.rooms[room].ID,
+      timer: io.sockets.adapter.rooms[room].timer
+    });
+  }
   socket.on("playVideo", function() {
-    io.emit("playVideo");
+    io.to(room).emit("playVideo");
   });
   socket.on("pauseVideo", function() {
-    io.emit("pauseVideo");
+    io.to(room).emit("pauseVideo");
   });
   socket.on("seekTo", function(data) {
-    io.emit("seekTo", data);
+    io.to(room).emit("seekTo", data);
   });
   socket.on("refreshTimer", function(time) {
-    timer = time;
+    io.sockets.adapter.rooms[room].timer = time;
   });
   socket.on("changeID", function(data) {
-    ID = data;
-    io.emit("changeID", data);
+    io.sockets.adapter.rooms[room].ID = data;
+    io.to(room).emit("changeID", data);
   });
+  socket.on("messageSent", function(data) {
+    io.to(room).emit("messageSent", data);
+  })
 });
