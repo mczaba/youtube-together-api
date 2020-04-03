@@ -13,12 +13,12 @@ io.on("connection", function(socket) {
   var room = socket.handshake["query"]["r_var"];
   socket.join(room);
   console.log("user joined room #" + room);
-  if (io.sockets.adapter.rooms[room].ID || io.sockets.adapter.rooms[room].timer) {
-    io.to(room).emit("initialize", {
-      ID: io.sockets.adapter.rooms[room].ID,
-      timer: io.sockets.adapter.rooms[room].timer
-    });
-  }
+  console.log("people in room ! " + io.sockets.adapter.rooms[room].length);
+  io.to(room).emit("initialize", {
+    ID: io.sockets.adapter.rooms[room].ID || "uyGVWA4Sim0",
+    timer: io.sockets.adapter.rooms[room].timer || 0,
+    people: io.sockets.adapter.rooms[room].length
+  });
   socket.on("playVideo", function() {
     io.to(room).emit("playVideo");
   });
@@ -37,5 +37,14 @@ io.on("connection", function(socket) {
   });
   socket.on("messageSent", function(data) {
     io.to(room).emit("messageSent", data);
-  })
+  });
+  socket.on("disconnect", function() {
+    if (io.sockets.adapter.rooms[room]) {
+      io.to(room).emit("initialize", {
+        ID: io.sockets.adapter.rooms[room].ID || "uyGVWA4Sim0",
+        timer: io.sockets.adapter.rooms[room].timer || 0,
+        people: io.sockets.adapter.rooms[room].length
+      });
+    }
+  });
 });
